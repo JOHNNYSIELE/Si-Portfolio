@@ -1,0 +1,6 @@
+{
+  "name": "Johnny Siele - Portfolio & CMS",
+  "description": "Production-quality dynamic personal portfolio, engineering case studies, technical blog, and protected CMS backed by Firebase Authentication and Firestore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
