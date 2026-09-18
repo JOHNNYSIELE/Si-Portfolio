@@ -11,6 +11,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { Skill } from '../types';
+import { NotificationSubscribeCard } from '../components/notifications/NotificationSubscribeCard';
 
 interface SkillsProps {
   skills: Skill[];
@@ -131,6 +132,13 @@ export const Skills: React.FC<SkillsProps> = ({ skills }) => {
           </div>
         ))}
       </div>
+
+      {/* Visitor Skills Notifications & Updates */}
+      <NotificationSubscribeCard
+        type="skills"
+        title="Get Notified on Technical Skills & Stack Expansions"
+        description="Subscribe to receive updates when Johnny masters new frameworks, adds cloud certifications, or publishes architectural reference implementations."
+      />
     </div>
   );
 };

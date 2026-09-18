@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Message } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Message, Subscriber } from '../types';
 import { firestoreService } from '../services/firestoreService';
 import { useToast } from '../context/ToastContext';
 import { ConfirmModal } from '../components/common/ConfirmModal';
@@ -12,7 +12,12 @@ import {
   X,
   ExternalLink,
   Reply,
-  Inbox
+  Inbox,
+  Bell,
+  Users,
+  BookOpen,
+  Cpu,
+  Send
 } from 'lucide-react';
 
 interface MessagesManagerProps {
@@ -22,10 +27,43 @@ interface MessagesManagerProps {
 
 export const MessagesManager: React.FC<MessagesManagerProps> = ({ messages, onRefresh }) => {
   const { showToast } = useToast();
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'subscribers'>('inquiries');
   const [filterStatus, setFilterStatus] = useState<'all' | 'unread' | 'read' | 'replied'>('all');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  // Subscribers state
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [isLoadingSubscribers, setIsLoadingSubscribers] = useState(false);
+
+  const loadSubscribers = async () => {
+    setIsLoadingSubscribers(true);
+    try {
+      const data = await firestoreService.getSubscribers();
+      setSubscribers(data);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to load subscribers', 'error');
+    } finally {
+      setIsLoadingSubscribers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'subscribers') {
+      loadSubscribers();
+    }
+  }, [activeTab]);
+
+  const handleDeleteSubscriber = async (id: string) => {
+    try {
+      await firestoreService.deleteSubscriber(id);
+      showToast('Subscriber removed', 'success');
+      loadSubscribers();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete subscriber', 'error');
+    }
+  };
 
   const filtered = messages.filter((m) => {
     if (filterStatus === 'all') return true;
@@ -76,29 +114,152 @@ export const MessagesManager: React.FC<MessagesManagerProps> = ({ messages, onRe
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white">Client Inquiries & Messages</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Communications & Notifications</h2>
           <p className="text-xs text-zinc-400">
-            Review and respond to messages submitted through the portfolio contact form.
+            Manage incoming contact inquiries and visitor notification subscribers for blog posts and skills.
           </p>
         </div>
 
-        {/* Status filters */}
+        {/* Tab switch */}
         <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 p-1 rounded-xl text-xs">
-          {(['all', 'unread', 'read', 'replied'] as const).map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilterStatus(status)}
-              className={`px-3 py-1.5 rounded-lg capitalize font-medium cursor-pointer transition ${
-                filterStatus === status
-                  ? 'bg-zinc-800 text-white shadow-xs'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+          <button
+            onClick={() => setActiveTab('inquiries')}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
+              activeTab === 'inquiries'
+                ? 'bg-zinc-800 text-white shadow-xs font-semibold'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span>Inquiries ({messages.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('subscribers')}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
+              activeTab === 'subscribers'
+                ? 'bg-zinc-800 text-white shadow-xs font-semibold'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Bell className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Subscribers ({subscribers.length})</span>
+          </button>
         </div>
       </div>
+
+      {activeTab === 'subscribers' ? (
+        /* Subscribers Management View */
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <Users className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-bold text-white block">Visitor Notification Registry</span>
+                <span className="text-zinc-400">
+                  {subscribers.length} visitors registered to receive updates on new blog posts & skill mastery.
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={loadSubscribers}
+              disabled={isLoadingSubscribers}
+              className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium cursor-pointer self-start sm:self-auto transition"
+            >
+              {isLoadingSubscribers ? 'Refreshing...' : 'Refresh List'}
+            </button>
+          </div>
+
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-zinc-800 text-zinc-400 font-mono bg-zinc-900/80">
+                  <tr>
+                    <th className="py-3 px-4">Subscriber Email</th>
+                    <th className="py-3 px-4">Preferences</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Registered Date</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {subscribers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center text-zinc-500">
+                        No subscribers registered yet. Visitors can subscribe via the notification center bell or blog/skill cards.
+                      </td>
+                    </tr>
+                  ) : (
+                    subscribers.map((sub) => (
+                      <tr key={sub.id} className="hover:bg-zinc-800/40 transition">
+                        <td className="py-3 px-4 font-medium text-white">
+                          {sub.email}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1.5">
+                            {sub.notifyNewBlogs && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 text-[10px] font-mono">
+                                <BookOpen className="w-3 h-3" />
+                                <span>Blogs</span>
+                              </span>
+                            )}
+                            {sub.notifyNewSkills && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-400 text-[10px] font-mono">
+                                <Cpu className="w-3 h-3" />
+                                <span>Skills</span>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Active</span>
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-zinc-400 text-[11px]">
+                          {sub.createdAt || 'Recent'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => sub.id && handleDeleteSubscriber(sub.id)}
+                            className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 transition cursor-pointer"
+                            title="Remove subscriber"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Inquiries Management View */
+        <>
+          <div className="flex items-center justify-end">
+            <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 p-1 rounded-xl text-xs">
+              {(['all', 'unread', 'read', 'replied'] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setFilterStatus(status)}
+                  className={`px-3 py-1.5 rounded-lg capitalize font-medium cursor-pointer transition ${
+                    filterStatus === status
+                      ? 'bg-zinc-800 text-white shadow-xs'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
 
       {/* Messages Table */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xs">
@@ -274,6 +435,8 @@ export const MessagesManager: React.FC<MessagesManagerProps> = ({ messages, onRe
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
 
       {/* Delete Modal */}

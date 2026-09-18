@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Mail, MapPin, CheckCircle2, Award, Briefcase, GraduationCap } from 'lucide-react';
+import { Download, Mail, MapPin, CheckCircle2, Award, Briefcase, GraduationCap, FileText, Sliders } from 'lucide-react';
 import { Profile, Education } from '../types';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 
@@ -7,9 +7,10 @@ interface AboutProps {
   profile: Profile;
   education: Education[];
   onNavigate: (tab: string) => void;
+  onOpenResumeGenerator?: () => void;
 }
 
-export const About: React.FC<AboutProps> = ({ profile, education, onNavigate }) => {
+export const About: React.FC<AboutProps> = ({ profile, education, onNavigate, onOpenResumeGenerator }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
       {/* Header Bio Section */}
@@ -46,19 +47,28 @@ export const About: React.FC<AboutProps> = ({ profile, education, onNavigate }) 
               )}
             </div>
 
-            {profile.resumeUrl && (
-              <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+              {onOpenResumeGenerator && (
+                <button
+                  onClick={onOpenResumeGenerator}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-xs cursor-pointer"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Customize & Generate Tailored Resume</span>
+                </button>
+              )}
+              {profile.resumeUrl && (
                 <a
                   href={profile.resumeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-xs"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-750 text-zinc-800 dark:text-zinc-200 font-semibold text-xs transition"
                 >
-                  <Download className="w-4 h-4" />
-                  Download Official CV / Resume
+                  <Download className="w-4 h-4 text-indigo-500" />
+                  <span>Download Default PDF Resume</span>
                 </a>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 

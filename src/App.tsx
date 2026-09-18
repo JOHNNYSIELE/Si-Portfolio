@@ -41,6 +41,8 @@ import { Gallery } from './pages/Gallery';
 import { Blog } from './pages/Blog';
 import { BlogPostView } from './pages/BlogPost';
 import { Contact } from './pages/Contact';
+import { ResumeGenerator } from './components/resume/ResumeGenerator';
+import { VisitorUpdateToast } from './components/notifications/VisitorUpdateToast';
 
 // Admin Components
 import { AdminLayout } from './admin/AdminLayout';
@@ -66,6 +68,7 @@ const PortfolioApp: React.FC = () => {
   const [selectedProjectSlug, setSelectedProjectSlug] = useState<string | null>(null);
   const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null);
   const [blogSearchTerm, setBlogSearchTerm] = useState<string>('');
+  const [isResumeModalOpen, setIsResumeModalOpen] = useState<boolean>(false);
 
   // Data Store
   const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
@@ -264,6 +267,18 @@ const PortfolioApp: React.FC = () => {
           />
         )}
 
+        {adminTab === 'resume' && (
+          <div className="h-[calc(100vh-4rem)]">
+            <ResumeGenerator
+              profile={profile}
+              skills={skills}
+              experience={experience}
+              projects={projects}
+              education={education}
+            />
+          </div>
+        )}
+
         {adminTab === 'messages' && (
           <MessagesManager
             messages={messages}
@@ -293,6 +308,10 @@ const PortfolioApp: React.FC = () => {
         currentTab={currentView}
         onNavigate={handleNavigate}
         resumeUrl={profile.resumeUrl}
+        blogPosts={blogPosts}
+        skills={skills}
+        onSelectPost={handleSelectPost}
+        onOpenResumeGenerator={() => setIsResumeModalOpen(true)}
       />
 
       <main className="flex-1">
@@ -303,6 +322,7 @@ const PortfolioApp: React.FC = () => {
             skills={skills}
             blogPosts={blogPosts}
             onNavigate={handleNavigate}
+            onOpenResumeGenerator={() => setIsResumeModalOpen(true)}
           />
         )}
 
@@ -311,7 +331,20 @@ const PortfolioApp: React.FC = () => {
             profile={profile}
             education={education}
             onNavigate={handleNavigate}
+            onOpenResumeGenerator={() => setIsResumeModalOpen(true)}
           />
+        )}
+
+        {currentView === 'resume' && (
+          <div className="py-8">
+            <ResumeGenerator
+              profile={profile}
+              skills={skills}
+              experience={experience}
+              projects={projects}
+              education={education}
+            />
+          </div>
         )}
 
         {currentView === 'projects' && (
@@ -371,6 +404,27 @@ const PortfolioApp: React.FC = () => {
           <Contact profile={profile} />
         )}
       </main>
+
+      {/* Resume Generator Modal */}
+      {isResumeModalOpen && (
+        <ResumeGenerator
+          isModal
+          onClose={() => setIsResumeModalOpen(false)}
+          profile={profile}
+          skills={skills}
+          experience={experience}
+          projects={projects}
+          education={education}
+        />
+      )}
+
+      {/* Visitor New Content Notification Toast */}
+      <VisitorUpdateToast
+        blogPosts={blogPosts}
+        skills={skills}
+        onNavigate={handleNavigate}
+        onSelectPost={handleSelectPost}
+      />
 
       <Footer
         profile={profile}

@@ -20,6 +20,7 @@ interface HomeProps {
   skills: Skill[];
   blogPosts: BlogPost[];
   onNavigate: (tab: string, param?: string) => void;
+  onOpenResumeGenerator?: () => void;
 }
 
 export const Home: React.FC<HomeProps> = ({
@@ -27,7 +28,8 @@ export const Home: React.FC<HomeProps> = ({
   projects,
   skills,
   blogPosts,
-  onNavigate
+  onNavigate,
+  onOpenResumeGenerator
 }) => {
   const featuredProjects = projects.filter((p) => p.featured).slice(0, 3);
   const topSkills = skills.filter((s) => s.isTopSkill).slice(0, 8);
@@ -76,7 +78,16 @@ export const Home: React.FC<HomeProps> = ({
                 >
                   <span>Get in Touch</span>
                 </button>
-                {profile.resumeUrl && (
+                {onOpenResumeGenerator ? (
+                  <button
+                    onClick={onOpenResumeGenerator}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 text-zinc-700 dark:text-zinc-300 text-sm font-semibold transition cursor-pointer"
+                    title="Generate customized resume or export PDF"
+                  >
+                    <Download className="w-4 h-4 text-indigo-500" />
+                    <span>Resume / CV</span>
+                  </button>
+                ) : profile.resumeUrl ? (
                   <a
                     href={profile.resumeUrl}
                     target="_blank"
@@ -86,7 +97,7 @@ export const Home: React.FC<HomeProps> = ({
                     <Download className="w-4 h-4 text-indigo-500" />
                     <span>Resume / CV</span>
                   </a>
-                )}
+                ) : null}
               </div>
 
               {/* Metric Highlights */}

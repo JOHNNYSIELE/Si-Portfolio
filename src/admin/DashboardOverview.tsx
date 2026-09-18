@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Sparkles,
   CheckCircle2,
-  Clock
+  Clock,
+  Database
 } from 'lucide-react';
 import { Project, BlogPost, Skill, GalleryItem, Message, Profile } from '../types';
 
@@ -187,6 +188,24 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               <span className="text-xs text-zinc-400">{unreadMessages.length} unread submissions</span>
             </div>
             <ArrowRight className="w-4 h-4 text-rose-400 group-hover:translate-x-1 transition-transform" />
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('settings')}
+            className="p-4 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-left border border-zinc-700/60 hover:border-emerald-500/50 transition cursor-pointer flex items-center justify-between group sm:col-span-2 lg:col-span-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <Database className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="block text-sm font-semibold text-white">Database Health & Diagnostics</span>
+                <span className="text-xs text-zinc-400">View real-time connection status, query latency, and verify all 11 Firestore collections</span>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-emerald-400 group-hover:underline flex items-center gap-1">
+              Inspect Health & Diagnostics →
+            </span>
           </button>
         </div>
       </div>

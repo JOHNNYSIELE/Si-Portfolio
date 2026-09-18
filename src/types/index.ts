@@ -159,3 +159,44 @@ export interface UserProfile {
   role: 'admin' | 'editor' | 'viewer';
   isAdmin: boolean;
 }
+
+export interface ResumeConfig {
+  selectedSkillIds: string[];
+  selectedExperienceIds: string[];
+  selectedProjectIds: string[];
+  selectedEducationIds: string[];
+  rolePreset: 'custom' | 'architect' | 'backend' | 'fullstack' | 'devops';
+  template: 'modern' | 'ats' | 'executive';
+  density: 'compact' | 'standard' | 'spacious';
+  accentColor: 'indigo' | 'slate' | 'emerald' | 'cyan' | 'monochrome';
+  customHeadline?: string;
+  customSummary?: string;
+  showProficiencyBars: boolean;
+  showProjectLinks: boolean;
+  showHighlights: boolean;
+  updatedAt?: any;
+}
+
+export interface Subscriber {
+  id?: string;
+  email: string;
+  notifyNewBlogs: boolean;
+  notifyNewSkills: boolean;
+  createdAt?: any;
+}
+
+export interface DatabaseHealthReport {
+  isConnected: boolean;
+  mode: 'firestore' | 'fallback';
+  latencyMs: number;
+  lastChecked: string;
+  error?: string;
+  collections: {
+    [key: string]: {
+      count: number;
+      status: 'healthy' | 'empty';
+    };
+  };
+  totalDocuments: number;
+}
+

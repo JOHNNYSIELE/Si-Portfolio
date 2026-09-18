@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { BlogPost } from '../types';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
+import { NotificationSubscribeCard } from '../components/notifications/NotificationSubscribeCard';
 
 interface BlogProps {
   posts: BlogPost[];
@@ -644,6 +645,13 @@ export const Blog: React.FC<BlogProps> = ({
           ))}
         </div>
       )}
+
+      {/* Visitor Blog Notifications & Subscription */}
+      <NotificationSubscribeCard
+        type="blog"
+        title="Get Notified on New Technical Articles"
+        description="Subscribe to receive notifications whenever Johnny publishes a new architectural case study, backend performance breakdown, or cloud infrastructure guide."
+      />
     </div>
   );
 };

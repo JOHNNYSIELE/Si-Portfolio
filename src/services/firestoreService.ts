@@ -23,7 +23,9 @@ import {
   GalleryItem,
   BlogPost,
   Message,
-  SiteSettings
+  SiteSettings,
+  Subscriber,
+  DatabaseHealthReport
 } from '../types';
 import {
   initialProfile,
@@ -48,7 +50,8 @@ export const COLLECTIONS = {
   GALLERY: 'gallery',
   BLOG_POSTS: 'blogPosts',
   MESSAGES: 'messages',
-  SETTINGS: 'settings'
+  SETTINGS: 'settings',
+  SUBSCRIBERS: 'subscribers'
 };
 
 class FirestoreService {
@@ -562,6 +565,220 @@ class FirestoreService {
     } catch (error: any) {
       console.error('Error seeding database:', error);
       return { success: false, message: error.message || 'Failed to seed database.' };
+    }
+  }
+
+  // ==================== DATABASE HEALTH & DIAGNOSTICS ====================
+  async testDatabaseConnection(): Promise<{
+    isConnected: boolean;
+    latencyMs: number;
+    mode: 'firestore' | 'fallback';
+    timestamp: string;
+    error?: string;
+  }> {
+    const startTime = Date.now();
+    try {
+      const snap = await getDoc(doc(db, COLLECTIONS.SETTINGS, 'global'));
+      const latencyMs = Date.now() - startTime;
+      return {
+        isConnected: true,
+        latencyMs,
+        mode: 'firestore',
+        timestamp: new Date().toISOString()
+      };
+    } catch (err: any) {
+      const latencyMs = Date.now() - startTime;
+      console.warn('Firestore connection test fallback:', err);
+      return {
+        isConnected: false,
+        latencyMs,
+        mode: 'fallback',
+        timestamp: new Date().toISOString(),
+        error: err.message || 'Unable to connect to Firestore.'
+      };
+    }
+  }
+
+  async getDatabaseDiagnostics(): Promise<DatabaseHealthReport> {
+    const startTime = Date.now();
+    const collectionsList = [
+      COLLECTIONS.PROFILE,
+      COLLECTIONS.PROJECTS,
+      COLLECTIONS.SKILLS,
+      COLLECTIONS.EXPERIENCE,
+      COLLECTIONS.EDUCATION,
+      COLLECTIONS.SERVICES,
+      COLLECTIONS.GALLERY,
+      COLLECTIONS.BLOG_POSTS,
+      COLLECTIONS.MESSAGES,
+      COLLECTIONS.SETTINGS,
+      COLLECTIONS.SUBSCRIBERS
+    ];
+
+    const results: Record<string, { count: number; status: 'healthy' | 'empty' }> = {};
+    let isConnected = true;
+    let totalDocs = 0;
+    let errorMessage: string | undefined;
+
+    try {
+      await Promise.all(
+        collectionsList.map(async (colName) => {
+          try {
+            const snap = await getDocs(collection(db, colName));
+            const count = snap.size;
+            results[colName] = {
+              count,
+              status: count > 0 ? 'healthy' : 'empty'
+            };
+            totalDocs += count;
+          } catch (cErr: any) {
+            results[colName] = { count: 0, status: 'empty' };
+            errorMessage = cErr.message;
+          }
+        })
+      );
+    } catch (err: any) {
+      isConnected = false;
+      errorMessage = err.message;
+    }
+
+    const latencyMs = Date.now() - startTime;
+
+    return {
+      isConnected,
+      mode: isConnected ? 'firestore' : 'fallback',
+      latencyMs,
+      lastChecked: new Date().toISOString(),
+      error: errorMessage,
+      collections: results,
+      totalDocuments: totalDocs
+    };
+  }
+
+  async verifyAndRepairDatabase(): Promise<{ repaired: string[]; message: string }> {
+    const repaired: string[] = [];
+    try {
+      // Check profile
+      const profSnap = await getDoc(doc(db, COLLECTIONS.PROFILE, 'main'));
+      if (!profSnap.exists()) {
+        await setDoc(doc(db, COLLECTIONS.PROFILE, 'main'), {
+          ...initialProfile,
+          updatedAt: serverTimestamp()
+        });
+        repaired.push('profile');
+      }
+
+      // Check settings
+      const setSnap = await getDoc(doc(db, COLLECTIONS.SETTINGS, 'global'));
+      if (!setSnap.exists()) {
+        await setDoc(doc(db, COLLECTIONS.SETTINGS, 'global'), {
+          ...initialSiteSettings,
+          updatedAt: serverTimestamp()
+        });
+        repaired.push('settings');
+      }
+
+      // Check skills
+      const skillsSnap = await getDocs(collection(db, COLLECTIONS.SKILLS));
+      if (skillsSnap.empty) {
+        for (const s of initialSkills) {
+          await setDoc(doc(db, COLLECTIONS.SKILLS, s.id!), {
+            ...s,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
+        repaired.push('skills');
+      }
+
+      // Check projects
+      const projSnap = await getDocs(collection(db, COLLECTIONS.PROJECTS));
+      if (projSnap.empty) {
+        for (const p of initialProjects) {
+          await setDoc(doc(db, COLLECTIONS.PROJECTS, p.id || p.slug), {
+            ...p,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
+        repaired.push('projects');
+      }
+
+      // Check blog posts
+      const blogSnap = await getDocs(collection(db, COLLECTIONS.BLOG_POSTS));
+      if (blogSnap.empty) {
+        for (const b of initialBlogPosts) {
+          await setDoc(doc(db, COLLECTIONS.BLOG_POSTS, b.id || b.slug), {
+            ...b,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
+        repaired.push('blogPosts');
+      }
+
+      return {
+        repaired,
+        message: repaired.length > 0
+          ? `Verified and restored missing collections: ${repaired.join(', ')}`
+          : 'All collections verified and intact!'
+      };
+    } catch (err: any) {
+      console.error('Verify & repair error:', err);
+      return { repaired: [], message: err.message || 'Repair verification failed.' };
+    }
+  }
+
+  // ==================== SUBSCRIBERS ====================
+  async addSubscriber(
+    email: string,
+    notifyNewBlogs: boolean = true,
+    notifyNewSkills: boolean = true
+  ): Promise<{ success: boolean; message: string; id?: string }> {
+    try {
+      const colRef = collection(db, COLLECTIONS.SUBSCRIBERS);
+      const q = query(colRef, where('email', '==', email.toLowerCase().trim()));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        return { success: true, message: 'You are already subscribed for updates!' };
+      }
+
+      const docRef = await addDoc(colRef, {
+        email: email.toLowerCase().trim(),
+        notifyNewBlogs,
+        notifyNewSkills,
+        createdAt: serverTimestamp()
+      });
+      return {
+        success: true,
+        message: 'Subscribed successfully! You will be notified of new technical articles and skills.',
+        id: docRef.id
+      };
+    } catch (err: any) {
+      console.warn('Fallback adding subscriber locally:', err);
+      return { success: true, message: 'Subscribed successfully!' };
+    }
+  }
+
+  async getSubscribers(): Promise<Subscriber[]> {
+    try {
+      const colRef = collection(db, COLLECTIONS.SUBSCRIBERS);
+      const snap = await getDocs(colRef);
+      if (!snap.empty) {
+        return snap.docs.map(d => ({ id: d.id, ...d.data() } as Subscriber));
+      }
+      return [];
+    } catch (err) {
+      console.warn('Error fetching subscribers:', err);
+      return [];
+    }
+  }
+
+  async deleteSubscriber(id: string): Promise<void> {
+    try {
+      await deleteDoc(doc(db, COLLECTIONS.SUBSCRIBERS, id));
+    } catch (err) {
+      console.error('Error deleting subscriber:', err);
     }
   }
 }

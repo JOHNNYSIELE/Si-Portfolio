@@ -10,14 +10,28 @@ import {
   ShieldCheck,
   Code2
 } from 'lucide-react';
+import { BlogPost, Skill } from '../../types';
+import { NotificationCenter } from '../notifications/NotificationCenter';
 
 interface NavbarProps {
   currentTab: string;
   onNavigate: (tab: string, param?: string) => void;
   resumeUrl?: string;
+  blogPosts?: BlogPost[];
+  skills?: Skill[];
+  onSelectPost?: (slugOrId: string) => void;
+  onOpenResumeGenerator?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, resumeUrl }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  currentTab,
+  onNavigate,
+  resumeUrl,
+  blogPosts = [],
+  skills = [],
+  onSelectPost,
+  onOpenResumeGenerator
+}) => {
   const { theme, toggleTheme } = useTheme();
   const { isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -95,6 +109,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, resumeUr
               <span>CV / Resume</span>
             </a>
           )}
+
+          {/* Visitor Notification Center */}
+          <NotificationCenter
+            blogPosts={blogPosts}
+            skills={skills}
+            onNavigate={onNavigate}
+            onSelectPost={onSelectPost}
+          />
 
           {/* Theme Toggle */}
           <button

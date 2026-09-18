@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   ShieldCheck,
-  Bell
+  Bell,
+  FileText
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -40,6 +41,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const navItems = [
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: 'profile', label: 'Profile & CV', icon: UserCheck },
+    { id: 'resume', label: 'Resume Generator', icon: FileText },
     { id: 'projects', label: 'Projects', icon: FolderGit2 },
     { id: 'blog', label: 'Blog CMS', icon: BookOpen },
     { id: 'skills', label: 'Skills Matrix', icon: Cpu },
