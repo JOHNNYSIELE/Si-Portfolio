@@ -42,8 +42,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'projects', label: 'Projects' },
     { id: 'skills', label: 'Skills' },
     { id: 'experience', label: 'Experience' },
-    { id: 'services', label: 'Services' },
-    { id: 'gallery', label: 'Gallery' },
     { id: 'blog', label: 'Blog' },
     { id: 'contact', label: 'Contact' },
   ];
@@ -127,15 +125,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
           </button>
 
-          {/* Admin CMS Trigger */}
-          <button
-            onClick={() => handleNavClick('admin')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-xs cursor-pointer"
-            title="Open Admin CMS Dashboard"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{isAdmin ? 'CMS Dashboard' : 'Admin CMS'}</span>
-          </button>
+          {/* Authenticated Admin CMS Indicator (Hidden for regular visitors) */}
+          {isAdmin && (
+            <button
+              onClick={() => handleNavClick('admin')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs cursor-pointer animate-in fade-in duration-200"
+              title="Open Admin CMS Dashboard (Active Session)"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>CMS Active</span>
+            </button>
+          )}
 
           {/* Mobile hamburger */}
           <button

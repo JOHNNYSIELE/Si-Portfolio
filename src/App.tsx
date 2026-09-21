@@ -36,13 +36,10 @@ import { Projects } from './pages/Projects';
 import { ProjectDetail } from './pages/ProjectDetail';
 import { Skills } from './pages/Skills';
 import { Experience } from './pages/Experience';
-import { Services } from './pages/Services';
-import { Gallery } from './pages/Gallery';
 import { Blog } from './pages/Blog';
 import { BlogPostView } from './pages/BlogPost';
 import { Contact } from './pages/Contact';
 import { ResumeGenerator } from './components/resume/ResumeGenerator';
-import { VisitorUpdateToast } from './components/notifications/VisitorUpdateToast';
 
 // Admin Components
 import { AdminLayout } from './admin/AdminLayout';
@@ -53,7 +50,6 @@ import { BlogManager } from './admin/BlogManager';
 import { SkillsManager } from './admin/SkillsManager';
 import { ExperienceManager } from './admin/ExperienceManager';
 import { ServicesManager } from './admin/ServicesManager';
-import { GalleryManager } from './admin/GalleryManager';
 import { ProfileManager } from './admin/ProfileManager';
 import { MessagesManager } from './admin/MessagesManager';
 import { SettingsManager } from './admin/SettingsManager';
@@ -137,9 +133,54 @@ const PortfolioApp: React.FC = () => {
     }
   };
 
+  // URL Hash synchronization for discreet admin access (e.g. #admin)
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#admin' || hash === '#/admin') {
+        setCurrentView('admin');
+      }
+    };
+
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  // Global Discreet Admin Keyboard Shortcut: Ctrl + Shift + A (or Cmd + Shift + A)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        setCurrentView((prev) => {
+          const next = prev === 'admin' ? 'home' : 'admin';
+          if (next === 'admin') {
+            window.location.hash = 'admin';
+          } else {
+            if (window.location.hash === '#admin') {
+              window.history.replaceState(null, '', window.location.pathname);
+            }
+          }
+          return next;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Scroll to top on navigation
   const handleNavigate = (tab: string, param?: string) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (tab === 'admin') {
+      window.location.hash = 'admin';
+      setCurrentView('admin');
+      return;
+    } else {
+      if (window.location.hash === '#admin') {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
     if (tab === 'project-detail' && param) {
       setSelectedProjectSlug(param);
       setCurrentView('project-detail');
@@ -253,13 +294,6 @@ const PortfolioApp: React.FC = () => {
           />
         )}
 
-        {adminTab === 'gallery' && (
-          <GalleryManager
-            gallery={gallery}
-            onRefresh={loadAllPortfolioData}
-          />
-        )}
-
         {adminTab === 'profile' && (
           <ProfileManager
             profile={profile}
@@ -330,6 +364,7 @@ const PortfolioApp: React.FC = () => {
           <About
             profile={profile}
             education={education}
+            services={services}
             onNavigate={handleNavigate}
             onOpenResumeGenerator={() => setIsResumeModalOpen(true)}
           />
@@ -372,17 +407,6 @@ const PortfolioApp: React.FC = () => {
           />
         )}
 
-        {currentView === 'services' && (
-          <Services
-            services={services}
-            onNavigate={handleNavigate}
-          />
-        )}
-
-        {currentView === 'gallery' && (
-          <Gallery items={gallery} />
-        )}
-
         {currentView === 'blog' && (
           <Blog
             posts={blogPosts.filter((b) => b.status === 'published')}
@@ -417,14 +441,6 @@ const PortfolioApp: React.FC = () => {
           education={education}
         />
       )}
-
-      {/* Visitor New Content Notification Toast */}
-      <VisitorUpdateToast
-        blogPosts={blogPosts}
-        skills={skills}
-        onNavigate={handleNavigate}
-        onSelectPost={handleSelectPost}
-      />
 
       <Footer
         profile={profile}

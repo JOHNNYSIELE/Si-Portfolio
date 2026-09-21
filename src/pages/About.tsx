@@ -1,16 +1,17 @@
 import React from 'react';
-import { Download, Mail, MapPin, CheckCircle2, Award, Briefcase, GraduationCap, FileText, Sliders } from 'lucide-react';
-import { Profile, Education } from '../types';
+import { Download, Mail, MapPin, CheckCircle2, Award, Briefcase, GraduationCap, FileText, Sliders, Server, ArrowRight } from 'lucide-react';
+import { Profile, Education, Service } from '../types';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 
 interface AboutProps {
   profile: Profile;
   education: Education[];
+  services?: Service[];
   onNavigate: (tab: string) => void;
   onOpenResumeGenerator?: () => void;
 }
 
-export const About: React.FC<AboutProps> = ({ profile, education, onNavigate, onOpenResumeGenerator }) => {
+export const About: React.FC<AboutProps> = ({ profile, education, services = [], onNavigate, onOpenResumeGenerator }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
       {/* Header Bio Section */}
@@ -151,6 +152,55 @@ export const About: React.FC<AboutProps> = ({ profile, education, onNavigate, on
               ))}
             </div>
           </div>
+
+          {/* Technical Capabilities & Engineering Advisory */}
+          {services && services.length > 0 && (
+            <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <Server className="w-5 h-5 text-indigo-500" />
+                  <span>Technical Advisory & Engineering Services</span>
+                </h2>
+                <button
+                  onClick={() => onNavigate('contact')}
+                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Discuss a Project</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {services.map((srv) => (
+                  <div
+                    key={srv.id}
+                    className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <Server className="w-4 h-4" />
+                      </div>
+                      <h3 className="font-bold text-zinc-900 dark:text-white text-sm">
+                        {srv.title}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      {srv.description}
+                    </p>
+                    {srv.features && srv.features.length > 0 && (
+                      <ul className="space-y-1 pt-1">
+                        {srv.features.slice(0, 3).map((feat, idx) => (
+                          <li key={idx} className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                            <span>{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

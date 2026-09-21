@@ -60,7 +60,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [subNotifyBlogs, setSubNotifyBlogs] = useState(true);
   const [subNotifySkills, setSubNotifySkills] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [browserAlertsEnabled, setBrowserAlertsEnabled] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -78,13 +77,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, [isOpen]);
-
-  // Check Web Notifications permission
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setBrowserAlertsEnabled(Notification.permission === 'granted');
-    }
-  }, []);
 
   // Construct Notification items from published blogs & skills
   const notifications: NotificationItem[] = useMemo(() => {
@@ -181,28 +173,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       showToast(err.message || 'Subscription failed', 'error');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const requestBrowserAlerts = async () => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          setBrowserAlertsEnabled(true);
-          showToast('Browser notifications enabled for technical updates!', 'success');
-          new Notification("Johnny Siele's Portfolio", {
-            body: 'You will now receive desktop notifications on new blog posts and skill updates!',
-            icon: '/favicon.ico'
-          });
-        } else {
-          showToast('Notification permission was declined.', 'info');
-        }
-      } catch (err) {
-        console.warn(err);
-      }
-    } else {
-      showToast('Desktop notifications not supported in this browser.', 'info');
     }
   };
 
@@ -366,21 +336,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   <span>{isSubmitting ? 'Registering...' : 'Subscribe to Notifications'}</span>
                 </button>
               </form>
-
-              {/* Browser Desktop Push Notification Toggle */}
-              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <button
-                  type="button"
-                  onClick={requestBrowserAlerts}
-                  className="w-full py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium flex items-center justify-between transition cursor-pointer"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Bell className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>{browserAlertsEnabled ? 'Browser alerts enabled' : 'Enable browser alerts'}</span>
-                  </span>
-                  <span className={`w-2 h-2 rounded-full ${browserAlertsEnabled ? 'bg-emerald-400' : 'bg-zinc-400'}`} />
-                </button>
-              </div>
             </div>
           ) : (
             <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/80">

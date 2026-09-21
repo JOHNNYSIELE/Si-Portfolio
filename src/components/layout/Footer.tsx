@@ -61,10 +61,10 @@ export const Footer: React.FC<FooterProps> = ({ profile, settings, onNavigate })
               </li>
               <li>
                 <button
-                  onClick={() => onNavigate('services')}
+                  onClick={() => onNavigate('about')}
                   className="hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
                 >
-                  Services
+                  About & Offerings
                 </button>
               </li>
               <li>
@@ -73,6 +73,14 @@ export const Footer: React.FC<FooterProps> = ({ profile, settings, onNavigate })
                   className="hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
                 >
                   Technical Blog
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('contact')}
+                  className="hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
+                >
+                  Contact & Inquiry
                 </button>
               </li>
             </ul>
@@ -127,18 +135,25 @@ export const Footer: React.FC<FooterProps> = ({ profile, settings, onNavigate })
                 </a>
               )}
             </div>
-            <button
-              onClick={() => onNavigate('admin')}
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-indigo-500 transition cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Admin CMS Portal</span>
-            </button>
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+              Open to technical consulting & architectural advisory.
+            </p>
           </div>
         </div>
 
         <div className="pt-8 border-t border-zinc-200 dark:border-zinc-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
-          <p>{settings?.footerText || `© ${new Date().getFullYear()} Johnny Siele. All rights reserved.`}</p>
+          <div className="flex items-center gap-2">
+            <p>{settings?.footerText || `© ${new Date().getFullYear()} Johnny Siele. All rights reserved.`}</p>
+            {/* Discreet Admin Lock / Portal Trigger */}
+            <button
+              onClick={() => onNavigate('admin')}
+              className="text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400 transition cursor-pointer p-0.5"
+              title="Staff Portal (or press Ctrl+Shift+A)"
+              aria-label="Staff Portal"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
           <p className="flex items-center gap-1">
             Built with PHP 8+, TypeScript, Tailwind CSS & Firebase
           </p>

@@ -46,8 +46,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'blog', label: 'Blog CMS', icon: BookOpen },
     { id: 'skills', label: 'Skills Matrix', icon: Cpu },
     { id: 'experience', label: 'Career & Edu', icon: Briefcase },
-    { id: 'services', label: 'Services', icon: Sliders },
-    { id: 'gallery', label: 'Media Gallery', icon: ImageIcon },
+    { id: 'services', label: 'Services & Advisory', icon: Sliders },
     { id: 'messages', label: 'Messages Inbox', icon: Mail, badge: unreadMessagesCount },
     { id: 'settings', label: 'Site Settings', icon: Settings }
   ];

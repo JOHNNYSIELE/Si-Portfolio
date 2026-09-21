@@ -165,16 +165,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToPublic }) => {
               </svg>
               <span>Sign In with Google</span>
             </button>
-
-            {/* Quick Preview Admin Bypass */}
-            <button
-              type="button"
-              onClick={devBypassLogin}
-              className="w-full py-2.5 px-4 rounded-xl bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300 font-semibold text-xs border border-indigo-800/80 transition cursor-pointer flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-4 h-4 text-indigo-400" />
-              <span>Quick Admin Access (Johnny Siele)</span>
-            </button>
           </div>
         </div>
       </div>
