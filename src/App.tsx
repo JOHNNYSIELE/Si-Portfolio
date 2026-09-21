@@ -249,6 +249,7 @@ const PortfolioApp: React.FC = () => {
             projects={projects}
             blogPosts={blogPosts}
             skills={skills}
+            services={services}
             gallery={gallery}
             messages={messages}
             profile={profile}

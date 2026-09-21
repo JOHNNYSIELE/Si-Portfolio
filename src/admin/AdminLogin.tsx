@@ -8,7 +8,8 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToPublic }) => {
-  const { loginWithEmail, loginWithGoogle, devBypassLogin } = useAuth();
+  const { loginWithEmail, registerWithEmail, loginWithGoogle } = useAuth();
+  const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState(PRIMARY_ADMIN_EMAIL);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,11 +21,19 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToPublic }) => {
     setLoading(true);
 
     try {
-      await loginWithEmail(email, password);
+      if (isRegistering) {
+        await registerWithEmail(email, password);
+      } else {
+        await loginWithEmail(email, password);
+      }
     } catch (err: any) {
-      console.error('Login error:', err);
+      console.error('Authentication error:', err);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') {
-        setError('Invalid credentials. If this is a fresh Firebase project, you can use Google Sign-In or the Quick Admin Preview Access below.');
+        setError('Invalid credentials. If this is a fresh setup, switch to "Create admin credentials" below or use Google Sign-In.');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError('An account with this email already exists. Please switch to Sign In.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password should be at least 6 characters.');
       } else {
         setError(err.message || 'Authentication failed. Please verify your credentials.');
       }
@@ -125,9 +134,30 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToPublic }) => {
               className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-2"
             >
               <KeyRound className="w-4 h-4" />
-              <span>{loading ? 'Authenticating...' : 'Sign In with Firebase'}</span>
+              <span>
+                {loading
+                  ? 'Authenticating...'
+                  : isRegistering
+                  ? 'Create Admin Account'
+                  : 'Sign In with Firebase'}
+              </span>
             </button>
           </form>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setError(null);
+              }}
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition cursor-pointer"
+            >
+              {isRegistering
+                ? 'Already have an account? Sign In'
+                : 'Need to set up credentials? Create Admin Account'}
+            </button>
+          </div>
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">

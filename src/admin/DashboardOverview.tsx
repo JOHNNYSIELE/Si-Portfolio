@@ -4,7 +4,7 @@ import {
   BookOpen,
   Cpu,
   Mail,
-  Image as ImageIcon,
+  Sliders,
   PlusCircle,
   ArrowRight,
   ShieldCheck,
@@ -14,13 +14,14 @@ import {
   Clock,
   Database
 } from 'lucide-react';
-import { Project, BlogPost, Skill, GalleryItem, Message, Profile } from '../types';
+import { Project, BlogPost, Skill, Service, GalleryItem, Message, Profile } from '../types';
 
 interface DashboardOverviewProps {
   projects: Project[];
   blogPosts: BlogPost[];
   skills: Skill[];
-  gallery: GalleryItem[];
+  services?: Service[];
+  gallery?: GalleryItem[];
   messages: Message[];
   profile: Profile;
   onNavigateTab: (tab: string) => void;
@@ -32,7 +33,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   projects,
   blogPosts,
   skills,
-  gallery,
+  services = [],
+  gallery = [],
   messages,
   profile,
   onNavigateTab,
@@ -114,15 +116,15 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </div>
 
         <div
-          onClick={() => onNavigateTab('gallery')}
+          onClick={() => onNavigateTab('services')}
           className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition cursor-pointer space-y-2"
         >
           <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-xs font-mono font-medium">Media</span>
-            <ImageIcon className="w-4 h-4 text-purple-400" />
+            <span className="text-xs font-mono font-medium">Services</span>
+            <Sliders className="w-4 h-4 text-purple-400" />
           </div>
-          <p className="text-2xl font-bold text-white">{gallery.length}</p>
-          <span className="block text-[11px] text-zinc-500">Gallery Items</span>
+          <p className="text-2xl font-bold text-white">{services.length}</p>
+          <span className="block text-[11px] text-zinc-500">Advisory Offerings</span>
         </div>
 
         <div
